@@ -168,7 +168,7 @@ public class Main {
             System.out.println("Quieres cambiar el titulo?");
             respuesta = teclado.nextLine();
             if(respuesta.equalsIgnoreCase("Si")){
-                System.out.println("Dime el nuevo titulo");
+                System.out.println("Dime el nuevo titulo: ");
                 tituloNuevo = teclado.nextLine();
                 prepared.setString(1, isbnElegido);
                 prepared.setString(2, tituloNuevo);
