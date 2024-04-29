@@ -1,11 +1,11 @@
 public class Libro {
-    protected String isbn;
+    protected int isbn;
     protected String titulo; 
     protected String autor;
     protected double precio;
 
     
-    public Libro(String isbn, String titulo, String autor, double precio) {
+    public Libro(int isbn, String titulo, String autor, double precio) {
         this.isbn = isbn;
         this.titulo = titulo;
         this.autor = autor;
@@ -13,12 +13,12 @@ public class Libro {
     }
 
 
-    public String getIsbn() {
+    public int getIsbn() {
         return isbn;
     }
 
 
-    public void setIsbn(String isbn) {
+    public void setIsbn(int isbn) {
         this.isbn = isbn;
     }
 

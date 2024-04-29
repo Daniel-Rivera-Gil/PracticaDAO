@@ -1,4 +1,3 @@
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -35,6 +34,29 @@ public class Main {
             case 2:
                 modificarLibro(url,user,password,teclado);
                 break;
+            case 3:
+                buscarLibroPorISBN(url,user,password,teclado);
+                break;
+            case 4:
+                buscarLibroPorAutor(url,user,password,teclado);
+                break;
+            case 5:
+                buscarLibroPorTitulo(url,user,password,teclado);
+                break;
+            case 6:
+                buscarLibroPorPrecio(url,user,password,teclado);
+                break;
+            case 7:
+                eliminarLibro(url,user,password,teclado);
+                break;
+            case 8:
+                todosLosLibros(url,user,password);
+                break;
+            case 9:
+                numeroLibros(url,user,password);
+                break;
+            case 10: 
+                break;
         }
         }while(opcion<1 && opcion > 10);
         
@@ -42,12 +64,13 @@ public class Main {
     }
 
 
-    private static void nuevoLibro(String url, String user, String password,Scanner teclado) {
-        String isbn,autor,titulo,sql;
+    public static void nuevoLibro(String url, String user, String password,Scanner teclado) {
+        String autor,titulo,sql;
+        int isbn;
         double precio;
         PreparedStatement prepared=null;
         System.out.print("Dime el isbn del libro: ");
-        isbn = teclado.nextLine();
+        isbn = teclado.nextInt();
         teclado.nextLine();
         System.out.print("Dime el titulo del libro: ");
         titulo = teclado.nextLine();
@@ -59,7 +82,7 @@ public class Main {
             sql = "INSERT INTO libro (isbn,titulo,autor, precio) VALUES (?,?,?,?)";
             prepared = conexion.prepareStatement(sql);
             //Vamos a establecer los parametros
-            prepared.setString(1, isbn);
+            prepared.setInt(1, isbn);
             prepared.setString(2, titulo);
             prepared.setString(3, autor);
             prepared.setDouble(4, precio);
@@ -75,23 +98,23 @@ public class Main {
         }
     }
 
-    private static void modificarLibro(String url, String user, String password, Scanner teclado) {
-        String isbnLibro=null,respuesta = null;
+    public static void modificarLibro(String url, String user, String password, Scanner teclado) {
+        int isbnLibro=0;
         String sql;
         int opcion;
         System.out.println("Dime el isbn del libro que quieras");
-        isbnLibro = teclado.nextLine();
+        isbnLibro = teclado.nextInt();
        
         sql = "UPDATE libro SET isbn = ? SET titulo = ? SET autor = ? SET precio = ?";
         try(Connection conexion = DriverManager.getConnection(url,user,password)){
             Statement sentencia = conexion.createStatement();
 			ResultSet resultados = sentencia.executeQuery("select * from libro");
             String titulo = resultados.getString("titulo");
-            String isbnElegido = resultados.getString("isbn");
+            int isbnElegido = resultados.getInt("isbn");
             String autor = resultados.getString("autor");
             double precio = resultados.getDouble("precio");
             PreparedStatement prepared = conexion.prepareStatement(sql);
-            if(isbnElegido.equalsIgnoreCase(isbnLibro)){
+            if(isbnElegido == isbnLibro){
                 System.out.println("1-Cambiar el titulo");
                 System.out.println("2-Cambiar el autor");
                 System.out.println("3-Cambiar el precio");
@@ -116,7 +139,7 @@ public class Main {
         }
 
 
-    private static void cambiarPrecio(Scanner teclado, String titulo, String isbnElegido, String autor,
+    public static void cambiarPrecio(Scanner teclado, String titulo, int isbnElegido, String autor,
         PreparedStatement prepared) throws SQLException {
         String respuesta;
         double precioNuevo;
@@ -126,7 +149,7 @@ public class Main {
         if(respuesta.equalsIgnoreCase("Si")){
             System.out.println("Dime el nuevo precio");
             precioNuevo = teclado.nextDouble();
-            prepared.setString(1, isbnElegido);
+            prepared.setInt(1, isbnElegido);
             prepared.setString(2, titulo);
             prepared.setString(3, autor);
             prepared.setDouble(2, precioNuevo);
@@ -138,7 +161,7 @@ public class Main {
     }
 
 
-    private static void cambiarAutor(Scanner teclado, String titulo, String isbnElegido, double precio,
+    public static void cambiarAutor(Scanner teclado, String titulo, int isbnElegido, double precio,
         PreparedStatement prepared) throws SQLException {
         String respuesta;
         String autorNuevo;
@@ -148,7 +171,7 @@ public class Main {
             if(respuesta.equalsIgnoreCase("Si")){
                 System.out.println("Dime el nuevo autor");
                 autorNuevo = teclado.nextLine();
-                prepared.setString(1, isbnElegido);
+                prepared.setInt(1, isbnElegido);
                 prepared.setString(2, titulo);
                 prepared.setString(3, autorNuevo);
                 prepared.setDouble(2, precio);
@@ -160,7 +183,7 @@ public class Main {
     }
 
 
-    private static void cambiarTitulo(Scanner teclado, String isbnElegido, String autor, double precio,
+    public static void cambiarTitulo(Scanner teclado, int isbnElegido, String autor, double precio,
             PreparedStatement prepared) throws SQLException {
         String respuesta;
         String tituloNuevo;
@@ -170,7 +193,7 @@ public class Main {
             if(respuesta.equalsIgnoreCase("Si")){
                 System.out.println("Dime el nuevo titulo: ");
                 tituloNuevo = teclado.nextLine();
-                prepared.setString(1, isbnElegido);
+                prepared.setInt(1, isbnElegido);
                 prepared.setString(2, tituloNuevo);
                 prepared.setString(3, autor);
                 prepared.setDouble(2, precio);
@@ -181,5 +204,173 @@ public class Main {
         }while(!respuesta.equalsIgnoreCase("Si") || !respuesta.equalsIgnoreCase("No"));
     }
 
+    
+    public static void buscarLibroPorISBN(String url, String user, String password, Scanner teclado) {
+        System.out.println("Dime el isbn que quieras buscar");
+        int isbnABuscar = teclado.nextInt(); // ISBN a buscar
+        String consultaSQL = "SELECT * FROM libro WHERE isbn = ?";
+
+        try(Connection conexion = DriverManager.getConnection(url,user,password)){
+            PreparedStatement statement = conexion.prepareStatement(consultaSQL);
+            statement.setInt(1, isbnABuscar);
+
+            ResultSet resultado = statement.executeQuery();
+
+            // Mostramos los libros encontrados
+           while (resultado.next()) {
+                String titulo = resultado.getString("titulo");
+                String autor = resultado.getString("autor");
+                int isbn = resultado.getInt("isbn");
+                double precio = resultado.getDouble("precio");
+
+                System.out.println("Título: " + titulo);
+                System.out.println("Autor: " + autor);
+                System.out.println("ISBN: " + isbn);
+                System.out.println("Precio: " + precio);
+            }
+        }catch(SQLException ex) {
+            System.out.println(ex.toString());
+        }
+    }
+
+    public static void buscarLibroPorAutor(String url, String user, String password, Scanner teclado) {
+        System.out.println("Dime el autor que quieras buscar");
+        String autorABuscar = teclado.nextLine();
+        String consultaSQL = "select * from libro where autor LIKE ?";
+        try(Connection conexion = DriverManager.getConnection(url,user,password)){
+            PreparedStatement statement = conexion.prepareStatement(consultaSQL);
+            statement.setString(1,"%"+autorABuscar+"%");
+
+            ResultSet resultado = statement.executeQuery();
+
+            while (resultado.next()) {
+                String titulo = resultado.getString("titulo");
+                String autor = resultado.getString("autor");
+                int isbn = resultado.getInt("isbn");
+                double precio = resultado.getDouble("precio");
+
+                System.out.println("Título: " + titulo);
+                System.out.println("Autor: " + autor);
+                System.out.println("ISBN: " + isbn);
+                System.out.println("Precio: " + precio);
+            }
+        }catch(SQLException ex) {
+            System.out.println(ex.toString());
+        }
+    }
+
+    public static void buscarLibroPorTitulo(String url, String user, String password, Scanner teclado) {
+        System.out.println("Dime el titulo que quieras buscar");
+        String tituloABuscar = teclado.nextLine();
+        String consultaSQL = "select * from libro where titulo LIKE ?";
+        try(Connection conexion = DriverManager.getConnection(url,user,password)){
+            PreparedStatement statement = conexion.prepareStatement(consultaSQL);
+            statement.setString(1,"%"+tituloABuscar+"%");
+
+            ResultSet resultado = statement.executeQuery();
+
+            while (resultado.next()) {
+                String titulo = resultado.getString("titulo");
+                String autor = resultado.getString("autor");
+                int isbn = resultado.getInt("isbn");
+                double precio = resultado.getDouble("precio");
+
+                System.out.println("Título: " + titulo);
+                System.out.println("Autor: " + autor);
+                System.out.println("ISBN: " + isbn);
+                System.out.println("Precio: " + precio);
+            }
+        }catch(SQLException ex) {
+            System.out.println(ex.toString());
+        }
+    }
+
+    public static void buscarLibroPorPrecio(String url, String user, String password, Scanner teclado) {
+       double precioABuscar;
+       String consultaSQL;
+        System.out.println("Dime el precio que quieras buscar");
+        precioABuscar = teclado.nextInt(); // ISBN a buscar
+        consultaSQL = "SELECT * FROM libro WHERE precio = ?";
+
+        try(Connection conexion = DriverManager.getConnection(url,user,password)){
+            PreparedStatement statement = conexion.prepareStatement(consultaSQL);
+            statement.setDouble(1, precioABuscar);
+
+            ResultSet resultado = statement.executeQuery();
+
+            // Mostramos los libros encontrados
+           while (resultado.next()) {
+                String titulo = resultado.getString("titulo");
+                String autor = resultado.getString("autor");
+                int isbn = resultado.getInt("isbn");
+                double precio = resultado.getDouble("precio");
+
+                System.out.println("Título: " + titulo);
+                System.out.println("Autor: " + autor);
+                System.out.println("ISBN: " + isbn);
+                System.out.println("Precio: " + precio);
+            }
+        }catch(SQLException ex) {
+            System.out.println(ex.toString());
+        }
+    }
+
+    public static void eliminarLibro(String url, String user, String password, Scanner teclado) {
+        int isbnAEliminar,filasAfectadas;
+        String consultaSQL;
+        System.out.println("Dime el isbn que quieras buscar");
+        isbnAEliminar = teclado.nextInt(); // ISBN a eliminar
+        consultaSQL = "DELETE FROM libro WHERE isbn = ?";
+        try(Connection conexion = DriverManager.getConnection(url,user,password)){
+            PreparedStatement statement = conexion.prepareStatement(consultaSQL);
+            statement.setInt(1, isbnAEliminar);
+
+            filasAfectadas = statement.executeUpdate();
+
+            // Verificamos si se eliminó el libro 
+            if (filasAfectadas > 0) {
+                System.out.println("El libro con ISBN " + isbnAEliminar + " ha sido eliminado de la base de datos.");
+            } else {
+                System.out.println("No se encontró ningún libro con ISBN " + isbnAEliminar + ".");
+            }
+        }catch(SQLException ex) {
+            System.out.println(ex.toString());
+        }
+    }
+
+    public static void todosLosLibros(String url, String user, String password) {
+        String consultaSQL = "SELECT autor, GROUP_CONCAT(titulo SEPARATOR ', ') AS libros FROM libro GROUP BY autor";
+        try(Connection conexion = DriverManager.getConnection(url,user,password)){
+            Statement statement = conexion.createStatement();
+           ResultSet resultado = statement.executeQuery(consultaSQL);
+
+            while (resultado.next()) {
+                String autor = resultado.getString("autor");
+                String libros = resultado.getString("libros");
+
+                // Mostramos la información del autor y sus libros
+                System.out.println(autor + ":");
+                System.out.println(libros);
+                System.out.println("----------------------");
+            }
+        }catch(SQLException ex) {
+            System.out.println(ex.toString());
+        }
+    }
+
+    public static void numeroLibros(String url, String user, String password) {
+        String consultaSQL = "SELECT COUNT(*) AS total_libros FROM libro";
+        try(Connection conexion = DriverManager.getConnection(url,user,password)){
+            Statement statement = conexion.createStatement();
+          
+            ResultSet resultado = statement.executeQuery(consultaSQL);
+            if (resultado.next()) {
+                int totalLibros = resultado.getInt("total_libros");
+                System.out.println("Número total de libros en la biblioteca: " + totalLibros);
+            }
+        }catch(SQLException ex) {
+            System.out.println(ex.toString());
+        }
+       }
     }   
 
