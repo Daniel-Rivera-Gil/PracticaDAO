@@ -11,7 +11,7 @@ public class Main {
         Scanner teclado = new Scanner(System.in);
         String url = "jdbc:mysql://localhost:3306/libros";
 		String user="root";
-		String password="pablodani6137";
+		String password="root";
         int opcion = 0;
         do{
         System.out.println("1-Nuevo libro");
